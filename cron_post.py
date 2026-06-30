@@ -16,8 +16,21 @@ import requests
 QUEUE_PATH = Path("posts/scheduled_posts.json")
 IMAGES_DIR = Path("posts/images")
 
-TG_TOKEN   = os.environ.get("TG_TOKEN", "")
-TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "")
+TG_TOKEN       = os.environ.get("TG_TOKEN", "")
+_TG_CHAT_RAW   = os.environ.get("TG_CHAT_ID", "").strip()
+
+
+def _normalize_chat_id(raw: str) -> str:
+    """Если ввели голое число типа '3514119197' (Telegram показывает такой
+    в инфо канала), добавляем префикс '-100'. Bot API не принимает голые ID."""
+    if raw.startswith("@") or raw.startswith("-"):
+        return raw
+    if raw.isdigit() and len(raw) >= 9:
+        return f"-100{raw}"
+    return raw
+
+
+TG_CHAT_ID = _normalize_chat_id(_TG_CHAT_RAW)
 
 
 def fail(msg: str):
